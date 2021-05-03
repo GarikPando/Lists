@@ -21,7 +21,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        _ = listStr.map {list.addProduct(product: Product(productName: $0, productCount: "2", isChecked: false)) }
+        //load model from static array
+        //_ = listStr.map {list.addProduct(product: Product(productName: $0, productCount: "2", isChecked: false)) }
         
         view.addSubview(tableView)
         tableView.delegate = self
@@ -35,16 +36,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         header.mainVC = self
         tableView.tableHeaderView = header
         
-//        if let documentURL = try? FileManager.default.url(for: .desktopDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("lists.json") {
-//
-//        }
+        //load saved list from json
+        if let documentURL = try? FileManager.default.url(for: .desktopDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("lists.json") {
+            if let jsonData = try? Data(contentsOf: documentURL) {
+                list = ListsModel(json: jsonData) ?? ListsModel()
+            }
+        }
         
     }
     
     //MARK: - Model
     var list = ListsModel()
-    var listStr = ["Хлебушек","Молочко","Гречечка","Маслице","Яйки","Сметанушка","Подорожниковый сбор","Лавандовый раф",
-                   "Пифко","Чипсеки","Мусильжбанчик","Сладкый пончек","Орешек солоноватый","Ммм данон"]
+    //var listStr = ["Хлебушек","Молочко","Гречечка","Маслице","Яйки","Сметанушка","Подорожниковый сбор","Лавандовый раф","Пифко","Чипсеки","Мусильжбанчик","Сладкый пончек","Орешек солоноватый","Ммм данон"]
     
     func addProductInMode(_ productName: String) {
         guard !productName.isEmpty else {
@@ -53,6 +56,29 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         let product = Product(productName: productName, productCount: "", isChecked: false)
         list.addProduct(product: product, isNeedParseName: true)
         tableView.reloadData()
+    }
+    
+    func saveModelToJson() -> Bool {
+        
+        if let documentURL  = try? FileManager.default.url(for: .desktopDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("lists.json") {
+            print("Model: \(documentURL)")
+            
+            if let jsonData = list.json {
+                //print json date
+                if let jsonStr = String(data: jsonData, encoding: .utf8) {
+                    print(jsonStr)
+                }
+                // save json data
+                do {
+                    try jsonData.write(to: documentURL)
+                    print("The data was saved")
+                } catch let error {
+                    print("The data coudn't saved because of error: \(error)")
+                }
+            }
+        }
+        
+        return true
     }
     
     //MARK: - TableView

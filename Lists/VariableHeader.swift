@@ -44,6 +44,8 @@ final class VariableHeader: UIView, UITextFieldDelegate
             
             addTextField.resignFirstResponder()
             getBackTextKeyboard()
+            
+            VC.saveModelToJson()
         }
     }
 
