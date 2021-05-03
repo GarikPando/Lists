@@ -98,7 +98,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 //        let countString = formatter.string(from: list.listOfProducts[indexPath.row].productCount as NSNumber)
         
         let attributeCount: NSMutableAttributedString = NSMutableAttributedString(string: list.listOfProducts[indexPath.row].productCount)
-
         
         if list.listOfProducts[indexPath.row].isChecked {
             attributeString.addAttribute(NSAttributedString.Key.strikethroughStyle, value: 2, range: NSMakeRange(0, attributeString.length))
