@@ -48,19 +48,6 @@ class CustomTableCell: UITableViewCell {
         setViewConstraints()
     }
     
-//    override func draw(_ rect: CGRect) {
-//        super.draw(rect)
-//        let path = UIBezierPath()
-//        let startPoint = CGPoint.init(x: 30, y: 50)
-//        let stopPoint = CGPoint.init(x: 400, y: 50)
-//        path.move(to: startPoint)
-//        path.addLine(to: stopPoint)
-//        path.close()
-//        UIColor.red.set()
-//        path.lineWidth = 10
-//        path.stroke()
-//    }
-    
     // MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)

@@ -7,23 +7,42 @@
 
 import Foundation
 
-struct Product {
+// MARK: - Item model
+struct Product: Codable {
     var productName: String = ""
     var productCount: String = ""
     var isChecked: Bool = false
 }
 
-class ListsModel: NSObject {
+// MARK: - Class that handle items model
+class ListsModel: NSObject, Codable {
     
     public var listOfProducts = [Product]()
     
-    // MARK: - Добавляем новую запись как есть
+    var json: Data? {
+        return try? JSONEncoder().encode(self)
+    }
+    
+    init?(json: Data) {
+        if let newValue = try? JSONDecoder().decode(ListsModel.self, from: json) {
+            self.listOfProducts = newValue.listOfProducts
+        }
+        else {
+            return nil
+        }
+    }
+    
+    override init() {
+        super.init()
+    }
+    
+    // MARK: - Add new product as ше шы
     public func addProduct(product: Product) {
         listOfProducts.append(product)
         sortList()
     }
     
-    // MARK: - Добавляем новую, в которой парсим имя на имя и количество
+    // MARK: - Add new product with parsing Name to Name and Count divided by ":"
     public func addProduct(product: Product, isNeedParseName: Bool) {
         if !product.productName.contains(":") {
             addProduct(product: product)
@@ -36,13 +55,13 @@ class ListsModel: NSObject {
         }
     }
     
-    // MARK: - Смена состояния записи
+    // MARK: - Change product state
     public func changeCheck(index: Int) {
         listOfProducts[index].isChecked = !listOfProducts[index].isChecked
         sortList()
     }
     
-    // MARK: - Сортировка списка по алфавиту + состояние
+    // MARK: - Sorted list by name and state in alfabet order
     private func sortList(){
         var listActive = listOfProducts.filter { !$0.isChecked }
         var listNotActive = listOfProducts.filter { $0.isChecked }

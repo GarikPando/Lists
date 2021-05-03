@@ -57,7 +57,6 @@ final class VariableHeader: UIView, UITextFieldDelegate
         textField.keyboardType = .default
         textField.returnKeyType = .done
         textField.autocorrectionType = .no
-        //textField.becomeFirstResponder()
         return textField
     }()
     
@@ -98,6 +97,7 @@ final class VariableHeader: UIView, UITextFieldDelegate
             centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
             heightAnchor.constraint(equalTo: containerView.heightAnchor)
         ])
+        
         //определяем положение главного контейнера
         containerView.translatesAutoresizingMaskIntoConstraints = false
         containerView.widthAnchor.constraint(equalTo: imageView.widthAnchor).isActive = true
