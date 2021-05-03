@@ -14,15 +14,28 @@ struct Product: Codable {
     var isChecked: Bool = false
 }
 
+// MARK: - Notification listsModelIsChanged
+extension Notification.Name {
+    static let listsModelIsChanged = Notification.Name("listsModelIsChanged")
+}
+
 // MARK: - Class that handle items model
 class ListsModel: NSObject, Codable {
     
+    //Shopping list
     public var listOfProducts = [Product]()
     
+    //Model in JSON
     var json: Data? {
         return try? JSONEncoder().encode(self)
     }
     
+    // MARK: - Post notification about changing state of model
+    public func modelIsChanged() {
+        NotificationCenter.default.post(Notification(name: Notification.Name.listsModelIsChanged))
+    }
+    
+    // MARK: - Initialization
     init?(json: Data) {
         if let newValue = try? JSONDecoder().decode(ListsModel.self, from: json) {
             self.listOfProducts = newValue.listOfProducts
@@ -36,10 +49,19 @@ class ListsModel: NSObject, Codable {
         super.init()
     }
     
-    // MARK: - Add new product as ше шы
+    // MARK: - Add new product as it is
     public func addProduct(product: Product) {
         listOfProducts.append(product)
         sortList()
+        //send notification
+        modelIsChanged()
+    }
+    
+    // MARK: - Delete product
+    public func removeProduct(by itemPos: Int) {
+        listOfProducts.remove(at: itemPos)
+        //send notification
+        modelIsChanged()
     }
     
     // MARK: - Add new product with parsing Name to Name and Count divided by ":"
@@ -59,6 +81,8 @@ class ListsModel: NSObject, Codable {
     public func changeCheck(index: Int) {
         listOfProducts[index].isChecked = !listOfProducts[index].isChecked
         sortList()
+        //send notification
+        modelIsChanged()
     }
     
     // MARK: - Sorted list by name and state in alfabet order
@@ -73,4 +97,19 @@ class ListsModel: NSObject, Codable {
         }
         listOfProducts = listActive + listNotActive
     }
+    
+    // MARK: - JSON
+    public func saveModel() {
+        if let documentURL  = try? FileManager.default.url(for: .desktopDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("lists.json") {
+            if let jsonData = json {
+                do {
+                    try jsonData.write(to: documentURL)
+                    print("The data was saved")
+                } catch let error {
+                    print("The data coudn't saved because of error: \(error)")
+                }
+            }
+        }
+    }
+    
 }

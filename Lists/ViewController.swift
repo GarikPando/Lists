@@ -10,13 +10,19 @@ import UIKit
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIScrollViewDelegate, UIGestureRecognizerDelegate
 {
     // MARK: - View configuration
-    
     private let tableView: UITableView = {
         let tableView = UITableView()
-        //tableView.allowsSelection = true
         tableView.register(CustomTableCell.self, forCellReuseIdentifier: CustomTableCell.identifier)
         return tableView
     }()
+    
+    // MARK: - Notification catcher
+    private var observer: NSObjectProtocol?
+    
+    //MARK: - Model
+    var list = ListsModel()
+    //var listStr = ["Хлебушек","Молочко","Гречечка","Маслице","Яйки","Сметанушка","Подорожниковый сбор","Лавандовый раф","Пифко","Чипсеки","Мусильжбанчик","Сладкый пончек","Орешек солоноватый","Ммм данон"]
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,18 +43,33 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.tableHeaderView = header
         
         //load saved list from json
+        loadModel()
+        
+        //create observer of notification listsModelIsChanged
+        observer = NotificationCenter.default.addObserver(forName: Notification.Name.listsModelIsChanged, object: nil, queue: OperationQueue.main, using: { [weak self] notification in
+            self?.list.saveModel()
+        })
+        
+    }
+    
+    // MARK: - Deinit. Remove observer
+    deinit {
+        if observer != nil {
+            NotificationCenter.default.removeObserver(observer!)
+        }
+    }
+    
+    // MARK: - Load model
+    func loadModel() {
         if let documentURL = try? FileManager.default.url(for: .desktopDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("lists.json") {
+            
             if let jsonData = try? Data(contentsOf: documentURL) {
                 list = ListsModel(json: jsonData) ?? ListsModel()
             }
         }
-        
     }
     
-    //MARK: - Model
-    var list = ListsModel()
-    //var listStr = ["Хлебушек","Молочко","Гречечка","Маслице","Яйки","Сметанушка","Подорожниковый сбор","Лавандовый раф","Пифко","Чипсеки","Мусильжбанчик","Сладкый пончек","Орешек солоноватый","Ммм данон"]
-    
+    // MARK: - Add product without count
     func addProductInMode(_ productName: String) {
         guard !productName.isEmpty else {
             return
@@ -57,29 +78,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         list.addProduct(product: product, isNeedParseName: true)
         tableView.reloadData()
     }
-    
-    func saveModelToJson() -> Bool {
-        
-        if let documentURL  = try? FileManager.default.url(for: .desktopDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("lists.json") {
-            print("Model: \(documentURL)")
-            
-            if let jsonData = list.json {
-                //print json date
-                if let jsonStr = String(data: jsonData, encoding: .utf8) {
-                    print(jsonStr)
-                }
-                // save json data
-                do {
-                    try jsonData.write(to: documentURL)
-                    print("The data was saved")
-                } catch let error {
-                    print("The data coudn't saved because of error: \(error)")
-                }
-            }
-        }
-        
-        return true
-    }
+
     
     //MARK: - TableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -143,11 +142,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             tableView.beginUpdates()
-            list.listOfProducts.remove(at: indexPath.row)
+            list.removeProduct(by: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
             tableView.endUpdates()
         }
     }
+    
     // MARK: - Change Header by Scrolling
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard let header = tableView.tableHeaderView as? VariableHeader else {

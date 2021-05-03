@@ -41,11 +41,9 @@ final class VariableHeader: UIView, UITextFieldDelegate
         if let VC = mainVC as? ViewController, let text = addTextField.text {
             addTextField.text = nil
             VC.addProductInMode(text)
-            
+        
             addTextField.resignFirstResponder()
             getBackTextKeyboard()
-            
-            VC.saveModelToJson()
         }
     }
 
